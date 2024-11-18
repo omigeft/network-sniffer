@@ -2,7 +2,7 @@
 @file: sniffer.py
 @breif: Main file of Network Sniffer
 @author: Wu Maojia
-@update: 2024.11.17
+@update: 2024.11.18
 """
 import sys
 import pickle
@@ -51,6 +51,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.filter_protocol = None
         self.filter_src = None
         self.filter_dst = None
+        self.filter_summary = None
 
         self.reassembleIP = True if self.yesReassembleRadioButton.isChecked() else False
 
@@ -76,8 +77,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.networkInterfacesComboBox.currentIndexChanged.connect(self.switch_iface)
 
         # 初始化Packet List，默认选择第一个网卡
-        self.packetTableWidget.setColumnCount(5)  # reset table header
-        self.packetTableWidget.setHorizontalHeaderLabels(["Time", "Protocol", "Source", "Destination", "Length"])
+        self.packetTableWidget.setColumnCount(6)  # reset table header
+        self.packetTableWidget.setHorizontalHeaderLabels(["Time", "Protocol", "Source", "Destination", "Length", "Summary"])
+        self.packetTableWidget.setColumnWidth(1, 200)
+        self.packetTableWidget.setColumnWidth(4, 100)
+        self.packetTableWidget.setColumnWidth(5, 800)
         self.switch_iface(0)
 
     def switch_iface(self, index):
@@ -89,24 +93,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # show each packet in the table
         for packet in self.iface_packets[self.ifaces[index]]:
-            protocol = packet.name  # 协议类型
-            src = packet.src if hasattr(packet, 'src') else 'N/A'  # 源地址
-            dst = packet.dst if hasattr(packet, 'dst') else 'N/A'  # 目的地址
-            
-            # 根据用户输入的过滤条件筛选数据包
-            if self.filter_protocol and self.filter_protocol.lower() not in protocol.lower():
-                continue
-            if self.filter_src and self.filter_src != src:
-                continue
-            if self.filter_dst and self.filter_dst != dst:
-                continue
-
-            self.show_packet(packet)
+            self.show_filtered_packet(packet)
 
     def filter(self):
         self.filter_protocol = self.protocolLineEdit.text()
         self.filter_src = self.sourceLineEdit.text()
         self.filter_dst = self.destinationLineEdit.text()
+        self.filter_summary = self.summaryLineEdit.text()
         self.switch_iface(self.networkInterfacesComboBox.currentIndex())    # 刷新Packet List
 
     def clear(self):
@@ -118,10 +111,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def start_sniffing(self):
         # 获取用户选择的网卡和过滤条件
         selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
-        print(selected_iface)
-        filter_protocol = self.protocolLineEdit.text()
-        filter_src = self.sourceLineEdit.text()
-        filter_dst = self.destinationLineEdit.text()
 
         # 创建并启动抓包线程
         self.sniffer_thread = PacketSniffer(iface=selected_iface)
@@ -166,6 +155,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
         self.iface_packets[selected_iface].append(packet)
 
+        self.show_filtered_packet(packet)
+
+    def show_filtered_packet(self, packet):
+        protocol = packet.name  # 协议类型
+        src = packet.src if hasattr(packet, 'src') else 'N/A'  # 源地址
+        dst = packet.dst if hasattr(packet, 'dst') else 'N/A'  # 目的地址
+        summary = packet.summary()
+        
+        # 根据用户输入的过滤条件筛选数据包
+        if self.filter_protocol and self.filter_protocol.lower() not in protocol.lower():
+            return
+        if self.filter_src and self.filter_src != src:
+            return
+        if self.filter_dst and self.filter_dst != dst:
+            return
+        if self.filter_summary and self.filter_summary.lower() not in summary.lower():
+            return
+
         self.show_packet(packet)
 
     def show_packet(self, packet):
@@ -176,6 +183,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         src = packet.src if hasattr(packet, 'src') else 'N/A'  # 源地址
         dst = packet.dst if hasattr(packet, 'dst') else 'N/A'  # 目的地址
         length = len(packet)  # 数据包长度
+        summary = packet.summary()
 
         # 在表格中显示简要信息
         row_position = self.packetTableWidget.rowCount()
@@ -185,6 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.packetTableWidget.setItem(row_position, 2, QTableWidgetItem(src))
         self.packetTableWidget.setItem(row_position, 3, QTableWidgetItem(dst))
         self.packetTableWidget.setItem(row_position, 4, QTableWidgetItem(str(length)))
+        self.packetTableWidget.setItem(row_position, 5, QTableWidgetItem(summary))
 
         # 为每行添加双击事件，显示详细信息
         self.packetTableWidget.itemClicked.connect(self.show_packet_details)
@@ -222,7 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
             for packet in packets:
                 self.iface_packets[selected_iface].append(packet)
-                self.show_packet(packet)
+                self.show_filtered_packet(packet)
 
 
 if __name__ == '__main__':

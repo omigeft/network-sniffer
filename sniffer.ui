@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1600</width>
-    <height>1200</height>
+    <width>2000</width>
+    <height>1500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
       <item>
        <widget class="QLineEdit" name="protocolLineEdit">
         <property name="placeholderText">
-         <string>Protocol (e.g. TCP)</string>
+         <string>Protocol (e.g. Ethernet)</string>
         </property>
        </widget>
       </item>
@@ -56,6 +56,13 @@
        <widget class="QLineEdit" name="destinationLineEdit">
         <property name="placeholderText">
          <string>Destination IP (e.g. 192.168.1.2)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="summaryLineEdit">
+        <property name="placeholderText">
+         <string>Summary (e.g. TCP)</string>
         </property>
        </widget>
       </item>
@@ -82,6 +89,9 @@
         <property name="text">
          <string>Yes</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -90,7 +100,7 @@
          <string>No</string>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -161,7 +171,7 @@
     <item>
      <widget class="QTableWidget" name="packetTableWidget">
       <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>260</number>
+       <number>250</number>
       </attribute>
      </widget>
     </item>
