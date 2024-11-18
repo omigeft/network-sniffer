@@ -159,7 +159,11 @@
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="packetTableWidget"/>
+     <widget class="QTableWidget" name="packetTableWidget">
+      <attribute name="horizontalHeaderDefaultSectionSize">
+       <number>260</number>
+      </attribute>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="packetDetailsLabel">

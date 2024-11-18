@@ -5,10 +5,12 @@
 @update: 2024.11.17
 """
 import sys
+import pickle
+import datetime
 
-from scapy.all import sniff, get_if_list, conf
+from scapy.all import sniff, get_if_list, conf, wrpcap, rdpcap
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox, QFileDialog
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
 
 from ui import Ui_MainWindow
@@ -58,6 +60,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.filterButton.clicked.connect(self.filter)
         self.yesReassembleRadioButton.toggled.connect(self.on_reassemble_radio_button_toggled)
         self.noReassembleRadioButton.toggled.connect(self.on_reassemble_radio_button_toggled)
+        self.clearButton.clicked.connect(self.clear)
+        self.saveButton.clicked.connect(self.save)
+        self.loadButton.clicked.connect(self.load)
 
         self.stopButton.setEnabled(False)
 
@@ -71,15 +76,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.networkInterfacesComboBox.currentIndexChanged.connect(self.switch_iface)
 
         # 初始化Packet List，默认选择第一个网卡
+        self.packetTableWidget.setColumnCount(5)  # reset table header
+        self.packetTableWidget.setHorizontalHeaderLabels(["Time", "Protocol", "Source", "Destination", "Length"])
         self.switch_iface(0)
 
     def switch_iface(self, index):
         self.packetDetailsTextEdit.clear()  # clear packet details
 
-        self.packetTableWidget.clear()  # clear packet table
-        self.packetTableWidget.setColumnCount(4)  # reset table header
-        self.packetTableWidget.setRowCount(0)  # reset row number of table
-        self.packetTableWidget.setHorizontalHeaderLabels(["Protocol", "Source", "Destination", "Length"])
+        # clear packet table but keep the header
+        self.packetTableWidget.clearContents()
+        self.packetTableWidget.setRowCount(0)
 
         # show each packet in the table
         for packet in self.iface_packets[self.ifaces[index]]:
@@ -104,7 +110,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.switch_iface(self.networkInterfacesComboBox.currentIndex())    # 刷新Packet List
 
     def clear(self):
-        self.iface_packets[self.ifaces[index]].clear()
+        selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
+        self.iface_packets[selected_iface].clear()
         self.switch_iface(self.networkInterfacesComboBox.currentIndex())
         self.packetDetailsTextEdit.clear()
 
@@ -163,6 +170,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show_packet(self, packet):
         # 处理每个抓到的数据包并更新界面
+        timestamp = float(packet.time)
+        readable_time = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         protocol = packet.name  # 协议类型
         src = packet.src if hasattr(packet, 'src') else 'N/A'  # 源地址
         dst = packet.dst if hasattr(packet, 'dst') else 'N/A'  # 目的地址
@@ -171,10 +180,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 在表格中显示简要信息
         row_position = self.packetTableWidget.rowCount()
         self.packetTableWidget.insertRow(row_position)
-        self.packetTableWidget.setItem(row_position, 0, QTableWidgetItem(protocol))
-        self.packetTableWidget.setItem(row_position, 1, QTableWidgetItem(src))
-        self.packetTableWidget.setItem(row_position, 2, QTableWidgetItem(dst))
-        self.packetTableWidget.setItem(row_position, 3, QTableWidgetItem(str(length)))
+        self.packetTableWidget.setItem(row_position, 0, QTableWidgetItem(readable_time))
+        self.packetTableWidget.setItem(row_position, 1, QTableWidgetItem(protocol))
+        self.packetTableWidget.setItem(row_position, 2, QTableWidgetItem(src))
+        self.packetTableWidget.setItem(row_position, 3, QTableWidgetItem(dst))
+        self.packetTableWidget.setItem(row_position, 4, QTableWidgetItem(str(length)))
 
         # 为每行添加双击事件，显示详细信息
         self.packetTableWidget.itemClicked.connect(self.show_packet_details)
@@ -194,6 +204,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.reassembleIP = True
             elif sender == self.noReassembleRadioButton:
                 self.reassembleIP = False
+
+    def save(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "", "PCAP Files (*.pcap);;All Files (*)", options=options)
+        
+        if file_name:
+            selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
+            wrpcap(file_name, self.iface_packets[selected_iface])
+
+    def load(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Load File", "", "PCAP Files (*.pcap);;All Files (*)", options=options)
+
+        if file_name:
+            packets = rdpcap(file_name)
+            selected_iface = self.ifaces[self.networkInterfacesComboBox.currentIndex()]
+            for packet in packets:
+                self.iface_packets[selected_iface].append(packet)
+                self.show_packet(packet)
 
 
 if __name__ == '__main__':

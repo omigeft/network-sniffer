@@ -87,6 +87,7 @@ class Ui_MainWindow(object):
         self.packetTableWidget.setObjectName("packetTableWidget")
         self.packetTableWidget.setColumnCount(0)
         self.packetTableWidget.setRowCount(0)
+        self.packetTableWidget.horizontalHeader().setDefaultSectionSize(260)
         self.verticalLayout.addWidget(self.packetTableWidget)
         self.packetDetailsLabel = QtWidgets.QLabel(self.centralWidget)
         self.packetDetailsLabel.setObjectName("packetDetailsLabel")
