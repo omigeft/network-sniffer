@@ -56,4 +56,6 @@ pyuic5 -x sniffer.ui -o ui.py
 
 区分MAC和IP地址，Protocol用最高层协议
 
-### Acknowledgement
+### License
+
+This project is licensed under the terms of the [MIT license](./LICENSE).
