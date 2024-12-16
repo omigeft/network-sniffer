@@ -1,6 +1,6 @@
 # Network Sniffer
 
-### Software Objective
+### Introduction
 
 Design and implement a sniffer tool capable of capturing and analyzing data flowing through a specified network interface. The specific technical requirements are as follows:
 
@@ -14,12 +14,6 @@ Design and implement a sniffer tool capable of capturing and analyzing data flow
 
 5. Parse Ethernet frames, IPv4, TCP, UDP, HTTP, ARP, and ICMP protocol data.
 
-### Submission Requirements:
-
-1. A functional sniffer tool (including executable files, source code, and usage/configuration instructions).
-
-2. A technical report on the sniffer tool (covering design, implementation, and testing phases).
-
 ### Environment Setup
 
 Visit [https://npcap.com/](https://npcap.com/) to download and install Npcap. During installation, ensure that the option **Install Npcap in WinPcap API-compatible Mode** is checked. This ensures that Npcap's API is compatible with WinPcap, enabling Scapy to function correctly.
@@ -32,7 +26,7 @@ Run the following command in the terminal to install the required Python depende
 pip install -r requirements.txt
 ```
 
-### Execution
+### Run
 
 Run the following command in the terminal to start the program:
 
