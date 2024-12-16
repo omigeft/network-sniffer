@@ -1,6 +1,6 @@
 # Network Sniffer
 
-Your stars will help me a lot!
+Your stars⭐ will help me a lot!
 
 ### Introduction
 
