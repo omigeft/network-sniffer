@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(2000, 1500)
+        MainWindow.resize(1500, 1200)
         self.centralWidget = QtWidgets.QWidget(MainWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralWidget)
@@ -44,9 +44,6 @@ class Ui_MainWindow(object):
         self.destinationLineEdit = QtWidgets.QLineEdit(self.centralWidget)
         self.destinationLineEdit.setObjectName("destinationLineEdit")
         self.filterHorizontalLayout.addWidget(self.destinationLineEdit)
-        self.summaryLineEdit = QtWidgets.QLineEdit(self.centralWidget)
-        self.summaryLineEdit.setObjectName("summaryLineEdit")
-        self.filterHorizontalLayout.addWidget(self.summaryLineEdit)
         self.filterButton = QtWidgets.QPushButton(self.centralWidget)
         self.filterButton.setObjectName("filterButton")
         self.filterHorizontalLayout.addWidget(self.filterButton)
@@ -118,10 +115,9 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Network Sniffer"))
         self.networkInterfaceLabel.setText(_translate("MainWindow", "Network Interface: "))
-        self.protocolLineEdit.setPlaceholderText(_translate("MainWindow", "Protocol (e.g. Ethernet)"))
+        self.protocolLineEdit.setPlaceholderText(_translate("MainWindow", "Protocol (e.g. TCP)"))
         self.sourceLineEdit.setPlaceholderText(_translate("MainWindow", "Source IP (e.g. 192.168.1.1)"))
         self.destinationLineEdit.setPlaceholderText(_translate("MainWindow", "Destination IP (e.g. 192.168.1.2)"))
-        self.summaryLineEdit.setPlaceholderText(_translate("MainWindow", "Summary (e.g. TCP)"))
         self.filterButton.setText(_translate("MainWindow", "Filter"))
         self.reassembleLabel.setText(_translate("MainWindow", "Reassemble IP Fragments:"))
         self.yesReassembleRadioButton.setText(_translate("MainWindow", "Yes"))
